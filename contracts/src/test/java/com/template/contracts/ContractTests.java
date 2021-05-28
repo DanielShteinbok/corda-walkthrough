@@ -1,6 +1,5 @@
 package com.template.contracts;
 
-import com.template.states.TemplateState;
 import net.corda.core.identity.CordaX500Name;
 import net.corda.testing.core.TestIdentity;
 import net.corda.testing.node.MockServices;

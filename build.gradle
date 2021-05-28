@@ -3,6 +3,7 @@ buildscript {//properties that you need to build the project
     file("$projectDir/./constants.properties").withInputStream { constants.load(it) }
 
     ext {
+        // this section just defines variables we will use later
         corda_release_group = constants.getProperty("cordaReleaseGroup")
         corda_core_release_group =  constants.getProperty("cordaCoreReleaseGroup")
         corda_release_version = constants.getProperty("cordaVersion")
@@ -17,13 +18,27 @@ buildscript {//properties that you need to build the project
         //springboot
         spring_boot_version = '2.0.2.RELEASE'
         spring_boot_gradle_plugin_version = '2.0.2.RELEASE'
+
+        //Tokens
+        tokens_release_group = 'com.r3.corda.lib.tokens'
+        tokens_release_version = '1.2.2'
+
+        //Accounts
+        // we need both accounts and confidential identities (why?)
+        accounts_release_group = "com.r3.corda.lib.accounts"
+        accounts_release_version = '1.0'
+        confidential_id_release_group = "com.r3.corda.lib.ci"
+        confidential_id_release_version = '1.0'
+
+        guava_version = constants.getProperty("guavaVersion")
     }
 
     repositories {
         mavenLocal()
         mavenCentral()
         jcenter()
-        maven { url 'https://software.r3.com/artifactory/corda-releases' }
+        maven { url 'https://software.r3.com/artifactory/corda' }
+        maven { url 'https://software.r3.com/artifactory/corda-lib-dev' }
     }
 
     dependencies {
@@ -35,6 +50,10 @@ buildscript {//properties that you need to build the project
 }
 
 allprojects {//Properties that you need to compile your project (The application)
+    // interesting, repositories.gradle has:
+    //    maven { url 'https://jitpack.io' }
+    //    maven { url 'https://software.r3.com/artifactory/corda' }
+    //    maven { url 'https://repo.gradle.org/gradle/libs-releases' }
     apply from: "${rootProject.projectDir}/repositories.gradle"
     apply plugin: 'java'
 
@@ -42,8 +61,15 @@ allprojects {//Properties that you need to compile your project (The application
         mavenLocal()
         jcenter()
         mavenCentral()
-        maven { url 'https://software.r3.com/artifactory/corda' }
-        maven { url 'https://jitpack.io' }
+        //maven { url 'https://software.r3.com/artifactory/corda' }
+        maven { url 'https://software.r3.com/artifactory/corda-lib-dev' }
+        //maven { url 'https://jitpack.io' }
+        maven { url 'https://software.r3.com/artifactory/corda-lib' }
+        //maven { url 'https://repo.gradle.org/gradle/libs-releases' }
+    }
+
+    dependencies {
+        compileOnly "com.google.guava:guava:$guava_version"
     }
 
     tasks.withType(JavaCompile) {
@@ -69,7 +95,7 @@ sourceSets {
         }
     }
 }
-//Module dependencis
+//Module dependencies
 dependencies {
     // Corda dependencies.
     cordaCompile "$corda_core_release_group:corda-core:$corda_core_release_version"
@@ -83,6 +109,14 @@ dependencies {
     cordaCompile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
     cordaCompile "org.apache.logging.log4j:log4j-web:${log4j_version}"
     cordaCompile "org.slf4j:jul-to-slf4j:$slf4j_version"
+
+    cordapp "$tokens_release_group:tokens-contracts:$tokens_release_version"
+    cordapp "$tokens_release_group:tokens-workflows:$tokens_release_version"
+
+    cordapp "$accounts_release_group:accounts-contracts:$accounts_release_version"
+    cordapp "$accounts_release_group:accounts-workflows:$accounts_release_version"
+
+    cordapp "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"
 }
 
 
@@ -98,6 +132,14 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         projectCordapp {
             deploy = false
         }
+        cordapp("$tokens_release_group:tokens-contracts:$tokens_release_version")
+        cordapp("$tokens_release_group:tokens-workflows:$tokens_release_version")
+
+        cordapp "$accounts_release_group:accounts-contracts:$accounts_release_version"
+        cordapp "$accounts_release_group:accounts-workflows:$accounts_release_version"
+
+        cordapp "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"
+
         cordapp project(':contracts')
         cordapp project(':workflows')
         runSchemaMigration = true //This configuration is for any CorDapps with custom schema, We will leave this as true to avoid
