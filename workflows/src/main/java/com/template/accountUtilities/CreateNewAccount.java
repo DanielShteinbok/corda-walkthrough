@@ -1,5 +1,6 @@
 package com.template.accountUtilities;
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.r3.corda.lib.accounts.contracts.states.AccountInfo;
 import com.r3.corda.lib.accounts.workflows.services.KeyManagementBackedAccountService;
 import net.corda.core.contracts.StateAndRef;
@@ -15,6 +16,7 @@ public class CreateNewAccount extends FlowLogic<String> {
         this.accountName = name;
     }
 
+    @Suspendable
     @Override
     public String call() throws FlowException {
         StateAndRef<AccountInfo> newAccount = null;

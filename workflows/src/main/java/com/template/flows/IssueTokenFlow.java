@@ -1,5 +1,6 @@
 package com.template.flows;
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.google.common.collect.ImmutableList;
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken;
 import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens;
@@ -7,10 +8,12 @@ import com.r3.corda.lib.tokens.workflows.utilities.FungibleTokenBuilder;
 import com.template.states.EnergyTokenType;
 import net.corda.core.flows.FlowException;
 import net.corda.core.flows.FlowLogic;
+import net.corda.core.flows.StartableByRPC;
 import net.corda.core.identity.Party;
 import net.corda.core.transactions.SignedTransaction;
 
-public class IssueTokensFlow extends FlowLogic<SignedTransaction> {
+@StartableByRPC
+public class IssueTokenFlow extends FlowLogic<SignedTransaction> {
 
     // the amount to issue
     private long amount;
@@ -18,10 +21,12 @@ public class IssueTokensFlow extends FlowLogic<SignedTransaction> {
     // the node to which to issue
     private Party recipient;
 
-    public IssueTokensFlow(long amount, Party recipient) {
+    public IssueTokenFlow(long amount, Party recipient) {
         this.amount = amount;
         this.recipient = recipient;
     }
+
+    @Suspendable
     @Override
     public SignedTransaction call() throws FlowException {
         // now we need to use the token builder to build a FungibleToken of the right amount

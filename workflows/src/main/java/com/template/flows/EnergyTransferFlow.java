@@ -15,6 +15,7 @@ import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
 import net.corda.core.identity.AnonymousParty;
 import net.corda.core.identity.Party;
+import net.corda.core.node.StatesToRecord;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +25,7 @@ public class EnergyTransferFlow {
 
     @InitiatingFlow
     @StartableByRPC
-    public class SendEnergyTokens extends FlowLogic<SignedTransaction> {
+    public static class SendEnergyTokens extends FlowLogic<SignedTransaction> {
         private final long amount;
         private final String whereTo;
         private final Party sanctionsBody;
@@ -79,9 +80,9 @@ public class EnergyTransferFlow {
     }
 
     @InitiatedBy(SendEnergyTokens.class)
-    public class ReceiveEnergyTokens extends FlowLogic<SignedTransaction> {
+    public static class ReceiveEnergyTokens extends FlowLogic<SignedTransaction> {
 
-        private FlowSession initiatingSession;
+        private final FlowSession initiatingSession;
 
         public ReceiveEnergyTokens(FlowSession initiatingSession) {
             this.initiatingSession = initiatingSession;
@@ -100,7 +101,7 @@ public class EnergyTransferFlow {
             // keep a handle on the transaction we just signed so you can receive and log the notarized transaction later
             SecureHash txId = subFlow(signTransactionFlow).getId();
 
-            return subFlow(new ReceiveFinalityFlow(initiatingSession, txId));
+            return subFlow(new ReceiveFinalityFlow(initiatingSession, txId, StatesToRecord.ALL_VISIBLE));
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.template.accountUtilities;
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.r3.corda.lib.accounts.contracts.states.AccountInfo;
 import com.r3.corda.lib.accounts.workflows.flows.ShareAccountInfo;
 import com.r3.corda.lib.accounts.workflows.services.KeyManagementBackedAccountService;
@@ -16,11 +17,12 @@ public class ShareAccountTo extends FlowLogic<String> {
     private final Party shareTo;
     private final String acctName;
 
-    public ShareAccountTo(Party shareTo, String acctName) {
+    public ShareAccountTo(String acctName, Party shareTo) {
         this.shareTo = shareTo;
         this.acctName = acctName;
     }
 
+    @Suspendable
     @Override
     public String call() throws FlowException {
         List<StateAndRef<AccountInfo>> allAccounts = getServiceHub()
