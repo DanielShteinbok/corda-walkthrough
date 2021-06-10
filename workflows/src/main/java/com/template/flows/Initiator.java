@@ -1,8 +1,6 @@
 package com.template.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
-import com.template.contracts.TemplateContract;
-import com.template.states.TemplateState;
 import net.corda.core.flows.*;
 import net.corda.core.identity.Party;
 import net.corda.core.transactions.SignedTransaction;
